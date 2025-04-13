@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>멀티 서버 프로필 상태</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 40px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 600px;
+    }
+    th, td {
+      border-bottom: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+    button {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 2px solid #333;
+      background-color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button.active {
+      background-color: #4caf50;
+      color: white;
+    }
+    .time {
+      font-size: 0.9em;
+      color: #555;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>📡 라프텔 이용 확인</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>프로필</th>
+        <th>상태</th>
+        <th>버튼</th>
+      </tr>
+    </thead>
+    <tbody id="profileTable">
+      <!-- JavaScript로 채워짐 -->
+    </tbody>
+  </table>
+
+  <script>
+    const profiles = [
+      { id: 1, active: false, time: null },
+      { id: 2, active: false, time: null },
+      { id: 3, active: false, time: null },
+      { id: 4, active: false, time: null }
+    ];
+
+    const table = document.getElementById('profileTable');
+
+    function formatTime(date) {
+      let hours = date.getHours();
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+      hours = hours % 12 || 12;
+      return `${hours}:${minutes} ${ampm}`;
+    }
+
+    function renderTable() {
+      table.innerHTML = '';
+      profiles.forEach((profile, index) => {
+        const row = document.createElement('tr');
+
+        const nameCell = document.createElement('td');
+        nameCell.textContent = `${profile.id}번`;
+        row.appendChild(nameCell);
+
+        const statusCell = document.createElement('td');
+        statusCell.textContent = profile.active ? '사용 중' : '사용 안 함';
+        row.appendChild(statusCell);
+
+        const buttonCell = document.createElement('td');
+        const button = document.createElement('button');
+        button.textContent = profile.active ? '끄기' : '사용';
+        button.classList.toggle('active', profile.active);
+        button.addEventListener('click', () => {
+          profile.active = !profile.active;
+          profile.time = profile.active ? new Date() : null;
+          renderTable();
+        });
+        buttonCell.appendChild(button);
+
+        if (profile.time) {
+          const timeSpan = document.createElement('span');
+          timeSpan.className = 'time';
+          timeSpan.textContent = formatTime(profile.time);
+          buttonCell.appendChild(timeSpan);
+        }
+
+        row.appendChild(buttonCell);
+        table.appendChild(row);
+      });
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
