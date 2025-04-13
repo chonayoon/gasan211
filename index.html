@@ -2,11 +2,11 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>실시간 라프텔 사용자 확인</title>
+  <title>멀티 서버 프로필 상태</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #fff;
+      font-family: sans-serif;
+      background: #f9f9f9;
       padding: 40px;
     }
     h2 {
@@ -18,68 +18,38 @@
       max-width: 800px;
     }
     th, td {
-      padding: 12px 10px;
       border-bottom: 1px solid #ccc;
+      padding: 12px;
       text-align: left;
     }
     input[type="text"] {
       padding: 6px;
-      width: 90%;
-      border-radius: 5px;
-      border: 1px solid #bbb;
+      width: 100px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 28px;
-    }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      border-radius: 34px;
-      transition: .4s;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 4px;
-      bottom: 4px;
+    button {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 2px solid #333;
       background-color: white;
-      border-radius: 50%;
-      transition: .4s;
+      font-weight: bold;
+      cursor: pointer;
+      margin-right: 10px;
     }
-    input:checked + .slider {
+    button.active {
       background-color: #4caf50;
+      color: white;
     }
-    input:checked + .slider:before {
-      transform: translateX(22px);
-    }
-    .status-time {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .time-text {
+    .time {
       font-size: 0.9em;
       color: #555;
+      margin-left: 10px;
     }
   </style>
 </head>
 <body>
-  <h2>실시간 라프텔 사용자 확인</h2>
+  <h2>📡 실시간 라프텔 사용자 확인</h2>
   <table>
     <thead>
       <tr>
@@ -92,74 +62,63 @@
   </table>
 
   <script>
-    const profiles = Array.from({ length: 4 }, (_, i) => ({
-      id: i + 1,
-      name: '',
-      active: false,
-      time: null
-    }));
+    const profiles = [
+      { id: 1, active: false, time: null, name: '' },
+      { id: 2, active: false, time: null, name: '' },
+      { id: 3, active: false, time: null, name: '' },
+      { id: 4, active: false, time: null, name: '' }
+    ];
+
+    const table = document.getElementById('profileTable');
 
     function formatTime(date) {
-      let h = date.getHours();
-      const m = String(date.getMinutes()).padStart(2, '0');
-      const ampm = h >= 12 ? 'p.m.' : 'a.m.';
-      h = h % 12 || 12;
-      return `${h}:${m} ${ampm}`;
+      let hours = date.getHours();
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+      hours = hours % 12 || 12;
+      return `${hours}:${minutes} ${ampm}`;
     }
 
     function renderTable() {
-      const table = document.getElementById('profileTable');
       table.innerHTML = '';
-
-      profiles.forEach((profile, i) => {
+      profiles.forEach((profile, index) => {
         const row = document.createElement('tr');
 
-        // 프로필 번호
-        const idCell = document.createElement('td');
-        idCell.textContent = `${profile.id}번`;
-        row.appendChild(idCell);
+        const profileCell = document.createElement('td');
+        profileCell.textContent = `${profile.id}번`;
+        row.appendChild(profileCell);
 
-        // 이름 입력
         const nameCell = document.createElement('td');
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = profile.name;
-        input.placeholder = '이름 입력';
-        input.addEventListener('input', e => profile.name = e.target.value);
-        nameCell.appendChild(input);
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.value = profile.name;
+        nameInput.placeholder = '이름 입력';
+        nameInput.disabled = profile.active;
+        nameInput.addEventListener('input', (e) => {
+          profiles[index].name = e.target.value;
+        });
+        nameCell.appendChild(nameInput);
         row.appendChild(nameCell);
 
-        // 스위치 + 상태
         const statusCell = document.createElement('td');
-        const container = document.createElement('div');
-        container.className = 'status-time';
-
-        const label = document.createElement('label');
-        label.className = 'switch';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = profile.active;
-        checkbox.addEventListener('change', () => {
-          profile.active = checkbox.checked;
-          profile.time = checkbox.checked ? new Date() : null;
+        const button = document.createElement('button');
+        button.textContent = profile.active ? '끄기' : '사용';
+        button.classList.toggle('active', profile.active);
+        button.addEventListener('click', () => {
+          profile.active = !profile.active;
+          profile.time = profile.active ? new Date() : null;
           renderTable();
         });
-        const slider = document.createElement('span');
-        slider.className = 'slider';
-        label.appendChild(checkbox);
-        label.appendChild(slider);
-        container.appendChild(label);
+        statusCell.appendChild(button);
 
         if (profile.active && profile.time) {
-          const time = document.createElement('span');
-          time.className = 'time-text';
-          time.textContent = `${formatTime(profile.time)}부터 사용 중`;
-          container.appendChild(time);
+          const timeSpan = document.createElement('span');
+          timeSpan.className = 'time';
+          timeSpan.textContent = `${formatTime(profile.time)}부터 사용 중`;
+          statusCell.appendChild(timeSpan);
         }
 
-        statusCell.appendChild(container);
         row.appendChild(statusCell);
-
         table.appendChild(row);
       });
     }
